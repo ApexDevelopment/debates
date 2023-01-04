@@ -1,0 +1,27 @@
+{
+  "name": "debates",
+  "version": "0.1.0",
+  "description": "A dead simple command parser.",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ApexDevelopment/debates.git"
+  },
+  "keywords": [
+    "cli",
+    "arguments",
+    "parser"
+  ],
+  "author": "ApexDevelopment",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ApexDevelopment/debates/issues"
+  },
+  "homepage": "https://github.com/ApexDevelopment/debates#readme",
+  "devDependencies": {
+    "jest": "^29.3.1"
+  }
+}
