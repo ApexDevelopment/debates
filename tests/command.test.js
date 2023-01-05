@@ -1,8 +1,8 @@
 const { Command } = require("../index.js");
 
 test("Command default constructor", () => {
-	const cmd = new Command();
-	expect(cmd.name()).toBe(null);
+	const cmd = new Command("cmd");
+	expect(cmd.name()).toBe("cmd");
 	expect(cmd.description()).toBe(null);
 	expect(cmd.version()).toBe(null);
 });
@@ -102,4 +102,64 @@ test("Command parse with non-required option", () => {
 
 	expect(Object.keys(results.options).length).toBe(1);
 	expect(results.options.option1).toBe(false);
+});
+
+test("Command parse missing required option", () => {
+	const cmd = new Command("cmd")
+		.option("option1", "o", "description", true);
+	
+	expect(() => {
+		cmd.parseSync("");
+	}).toThrow();
+});
+
+test("Command parse missing required argument", () => {
+	const cmd = new Command("cmd")
+		.argument("arg1", "description", true);
+	
+	expect(() => {
+		cmd.parseSync("");
+	}).toThrow();
+});
+
+test("Command parse with extra arguments", () => {
+	const cmd = new Command("cmd")
+		.argument("arg1", "description", true);
+	const results = cmd.parseSync("arg1value arg2value");
+
+	expect(Object.keys(results.arguments).length).toBe(1);
+	expect(results.arguments.arg1).toBe("arg1value");
+	expect(results._.length).toBe(1);
+	expect(results._[0]).toBe("arg2value");
+});
+
+test("Command parse with extra options", () => {
+	const cmd = new Command("cmd")
+		.option("option1", "o", "description", true);
+	const results = cmd.parseSync("--option1 --option2");
+
+	expect(Object.keys(results.options).length).toBe(1);
+	expect(results.options.option1).toBe(true);
+	expect(results._.length).toBe(1);
+	expect(results._[0]).toBe("--option2");
+});
+
+test("Command parse in strict mode with extra options", () => {
+	const cmd = new Command("cmd")
+		.strict()
+		.option("option1", "o", "description", true);
+
+	expect(() => {
+		cmd.parseSync("--option1 --option2", true);
+	}).toThrow();
+});
+
+test("Command parse in strict mode with extra arguments", () => {
+	const cmd = new Command("cmd")
+		.strict()
+		.argument("arg1", "description", true);
+
+	expect(() => {
+		cmd.parseSync("arg1value arg2value", true);
+	}).toThrow();
 });
