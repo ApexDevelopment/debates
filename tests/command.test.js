@@ -54,7 +54,7 @@ test("Command parse with two arguments", () => {
 
 test("Command parse with one option", () => {
 	const cmd = new Command("cmd")
-		.option("option1", "o", "description", true);
+		.option("option1", "o", "description");
 	const results = cmd.parseSync("--option1");
 
 	expect(Object.keys(results.options).length).toBe(1);
@@ -68,8 +68,8 @@ test("Command parse with one option", () => {
 
 test("Command parse with two options", () => {
 	const cmd = new Command("cmd")
-		.option("option1", "o", "description", true)
-		.option("option2", "p", "description", true);
+		.option("option1", "o", "description")
+		.option("option2", "p", "description");
 	const results = cmd.parseSync("--option1 --option2");
 
 	expect(Object.keys(results.options).length).toBe(2);
@@ -85,8 +85,8 @@ test("Command parse with two options", () => {
 
 test("Command parse with one option and one argument", () => {
 	const cmd = new Command("cmd")
-		.option("option1", "o", "description", true)
-		.argument("arg1", "description", true);
+		.option("option1", "o", "description")
+		.argument("arg1", "description");
 	const results = cmd.parseSync("--option1 arg1value");
 
 	expect(Object.keys(results.options).length).toBe(1);
@@ -95,18 +95,18 @@ test("Command parse with one option and one argument", () => {
 	expect(results.arguments.arg1).toBe("arg1value");
 });
 
-test("Command parse with non-required option", () => {
-	const cmd = new Command("cmd")
-		.option("option1", "o", "description", false);
-	const results = cmd.parseSync("");
-
-	expect(Object.keys(results.options).length).toBe(1);
-	expect(results.options.option1).toBe(false);
-});
-
 test("Command parse missing required option", () => {
 	const cmd = new Command("cmd")
-		.option("option1", "o", "description", true);
+		.option("option1", "o", "description", "string", true);
+	
+	expect(() => {
+		cmd.parseSync("");
+	}).toThrow();
+});
+
+test("Command parse missing required option, required with Command.required()", () => {
+	const cmd = new Command("cmd")
+		.option("option1", "o", "description").required();
 	
 	expect(() => {
 		cmd.parseSync("");
@@ -122,6 +122,25 @@ test("Command parse missing required argument", () => {
 	}).toThrow();
 });
 
+test("Command parse missing required argument, required with Command.required()", () => {
+	const cmd = new Command("cmd")
+		.argument("arg1", "description").required();
+	
+	expect(() => {
+		cmd.parseSync("");
+	}).toThrow();
+});
+
+test("Normal command parse with .accepts() and .required()", () => {
+	const cmd = new Command("cmd")
+		.option("option1", "o", "description").accepts("string").required()
+		.argument("arg1", "description").required();
+	
+	const results = cmd.parseSync("--option1 value1 arg1value");
+	expect(results.options.option1).toBe("value1");
+	expect(results.arguments.arg1).toBe("arg1value");
+});
+
 test("Command parse with extra arguments", () => {
 	const cmd = new Command("cmd")
 		.argument("arg1", "description", true);
@@ -133,9 +152,22 @@ test("Command parse with extra arguments", () => {
 	expect(results._[0]).toBe("arg2value");
 });
 
+test("Command parse with extra arguments given after --", () => {
+	const cmd = new Command("cmd")
+		.argument("arg1", "description", true)
+		.argument("arg2", "description", false);
+	const results = cmd.parseSync("arg1value -- arg2value");
+
+	expect(Object.keys(results.arguments).length).toBe(1);
+	expect(results.arguments.arg1).toBe("arg1value");
+	expect(results.arguments.arg2).toBe(undefined);
+	expect(results._.length).toBe(1);
+	expect(results._[0]).toBe("arg2value");
+});
+
 test("Command parse with extra options", () => {
 	const cmd = new Command("cmd")
-		.option("option1", "o", "description", true);
+		.option("option1", "o", "description");
 	const results = cmd.parseSync("--option1 --option2");
 
 	expect(Object.keys(results.options).length).toBe(1);
@@ -147,10 +179,10 @@ test("Command parse with extra options", () => {
 test("Command parse in strict mode with extra options", () => {
 	const cmd = new Command("cmd")
 		.strict()
-		.option("option1", "o", "description", true);
+		.option("option1", "o", "description");
 
 	expect(() => {
-		cmd.parseSync("--option1 --option2", true);
+		cmd.parseSync("--option1 --option2");
 	}).toThrow();
 });
 
@@ -160,6 +192,42 @@ test("Command parse in strict mode with extra arguments", () => {
 		.argument("arg1", "description", true);
 
 	expect(() => {
-		cmd.parseSync("arg1value arg2value", true);
+		cmd.parseSync("arg1value arg2value");
 	}).toThrow();
+});
+
+test("Command parse with option argument", () => {
+	const cmd = new Command("cmd")
+		.option("option1", "o", "description", "string");
+	const results = cmd.parseSync("--option1 value");
+
+	expect(Object.keys(results.options).length).toBe(1);
+	expect(results.options.option1).toBe("value");
+});
+
+test("Command parse with quoted option string argument", () => {
+	const cmd = new Command("cmd")
+		.option("option1", "o", "description", "string");
+	const results = cmd.parseSync(`--option1 "value"`);
+
+	expect(Object.keys(results.options).length).toBe(1);
+	expect(results.options.option1).toBe("value");
+});
+
+test("Command parse with quoted option string argument containing spaces", () => {
+	const cmd = new Command("cmd")
+		.option("option1", "o", "description", "string");
+	const results = cmd.parseSync(`--option1 "value with spaces"`);
+
+	expect(Object.keys(results.options).length).toBe(1);
+	expect(results.options.option1).toBe("value with spaces");
+});
+
+test("Command parse with option argument, type given using Command.accepts()", () => {
+	const cmd = new Command("cmd")
+		.option("option1", "o", "description").accepts("string");
+	const results = cmd.parseSync("--option1 value");
+
+	expect(Object.keys(results.options).length).toBe(1);
+	expect(results.options.option1).toBe("value");
 });

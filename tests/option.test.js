@@ -5,14 +5,16 @@ test("Option default constructor", () => {
 	expect(opt.name()).toBe("opt");
 	expect(opt.shorthand()).toBe(null);
 	expect(opt.description()).toBe(null);
+	expect(opt.accepts()).toBe(null);
 	expect(opt.required()).toBe(false);
 });
 
 test("Option constructor", () => {
-	const opt = new Option("opt", "o", "description", true);
+	const opt = new Option("opt", "o", "description", "string", true);
 	expect(opt.name()).toBe("opt");
 	expect(opt.shorthand()).toBe("o");
 	expect(opt.description()).toBe("description");
+	expect(opt.accepts()).toBe("string");
 	expect(opt.required()).toBe(true);
 });
 
@@ -32,6 +34,20 @@ test("Option description", () => {
 	const opt = new Option("opt");
 	opt.description("description2");
 	expect(opt.description()).toBe("description2");
+});
+
+test("Option accepts", () => {
+	const opt = new Option("opt");
+	opt.accepts("string");
+	expect(opt.accepts()).toBe("string");
+	opt.accepts("integer");
+	expect(opt.accepts()).toBe("integer");
+	opt.accepts("float");
+	expect(opt.accepts()).toBe("float");
+
+	expect(() => {
+		opt.accepts("bogus");
+	}).toThrow();
 });
 
 test("Option required", () => {
