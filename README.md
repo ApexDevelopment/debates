@@ -86,7 +86,7 @@ new Command()
 	.option("option", "o", "Some required option", null, true);
 ```
 
-Required arguments can be used to, for example, make the user enter an IP address or hostname to ping in a ping command. Required options however serve little purpose right now, as options cannot take a value in Debates (yet).
+Required arguments can be used to, for example, make the user enter an IP address or hostname to ping in a ping command.
 
 `required()` and `accepts()` can be chained together. For readability, it is recommended to keep them on the same line as the argument or option they modify, because you may also continue to chain calls to `argument()` and `option()`.
 
