@@ -1,4 +1,4 @@
-const { Argument } = require("../index.js");
+import Argument from "../src/argument.js";
 
 test("Argument default constructor", () => {
 	const arg = new Argument("arg");

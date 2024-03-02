@@ -1,4 +1,4 @@
-const { Command } = require("../index.js");
+import Command from "../src/command.js";
 
 test("Command default constructor", () => {
 	const cmd = new Command("cmd");

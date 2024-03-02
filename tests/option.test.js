@@ -1,4 +1,4 @@
-const { Option } = require("../index.js");
+import Option from "../src/option.js";
 
 test("Option default constructor", () => {
 	const opt = new Option("opt");

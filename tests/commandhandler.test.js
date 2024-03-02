@@ -1,4 +1,5 @@
-const { Command, CommandHandler } = require("../index.js");
+import Command from "../src/command.js";
+import CommandHandler from "../src/commandhandler.js";
 
 test("CommandHandler constructor", () => {
 	const handler = new CommandHandler();
