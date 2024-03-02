@@ -3,6 +3,7 @@
   "version": "2.0.1",
   "description": "A dead simple command parser",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "test": "jest"
   },
