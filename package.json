@@ -1,6 +1,6 @@
 {
   "name": "debates",
-  "version": "2.0.1",
+  "version": "3.0.0",
   "description": "A dead simple command parser",
   "main": "index.js",
   "type": "module",
@@ -14,7 +14,7 @@
   "keywords": [
     "cli",
     "arguments",
-	"command",
+    "command",
     "parser"
   ],
   "author": "ApexDevelopment",
