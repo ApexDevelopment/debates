@@ -46,49 +46,64 @@ echo.parse(userInput).then((results) => {
 Calling `parse()` or `parseSync()` will give back an object that contains what options and arguments were parsed. The structure of the object looks like this:
 ```JavaScript
 {
-	arguments: {...},
-	options: {...},
-	_: [...]
+	arguments: { /* ... */ },
+	options: { /* ... */ },
+	_: [ /* ... */ ]
 }
 ```
+
+The full (long) name of the options are used as the keys to the options object.
 
 The `_` property contains extra options or arguments that were not defined in the command. In strict parsing mode, no extra options or arguments are allowed, they will cause a `throw`.
 
 ## Option Values
-Also known as option arguments, options can take a value, e.g. when you do something like `ping -n 300 google.com`, in which case the option "n" has a value of 300. Debates supports this using two methods:
+Also known as option arguments, options can take a value, e.g. when you do something like `ping -n 300 google.com`, in which case the option "n" has a value of 300. Debates supports this:
 ```JavaScript
-// The more expressive way:
 new Command()
 	.option("option", "o", "Some option").accepts("string");
 	// Options can accept "string", "integer", or "float"
+```
 
-// Alternatively:
+Options (and arguments) can also have default values:
+```JavaScript
 new Command()
-	.option("option", "o", "Some option", "string");
+	.option("option", "o", "Some option").accepts("string").defaultsTo("foo");
+```
+
+You **cannot** provide a default value if the option is required. The default value **must** match the type that the option accepts. If `accepts()` is specified, but no default value is provided, the default value will be `false` to indicate that the option was not provided.
+
+You can use this behavior to discern whether the user provided a value for the option:
+
+```JavaScript
+let pingCommand = new Command("ping")
+	.option("repeat", "n", "Ping the host n times. If not provided, will ping forever.").accepts("integer");
+	.argument("hostname", "The hostname to ping.");
+
+let results = pingCommand.parse("google.com");
+
+if (!results.options.repeat) {
+	console.log("-n not specified, pinging forever...");
+	/* ... */
+}
 ```
 
 ## Required Arguments and Options
-Options and arguments are optional by default. They can be made required in two ways:
+Options and arguments are optional by default.
 ```JavaScript
-// The more expressive way:
 new Command()
 	.argument("arg", "Some required argument").required();
-
-// Alternatively:
-new Command()
-	.argument("arg", "Some required argument", true);
-```
-
-The first way is recommended, as it works for both arguments and options. The constructor for an argument is different from that of an option, so to make an option required using the second method you would do:
-```JavaScript
-// Not recommended
-new Command()
-	.option("option", "o", "Some required option", null, true);
 ```
 
 Required arguments can be used to, for example, make the user enter an IP address or hostname to ping in a ping command.
 
 `required()` and `accepts()` can be chained together. For readability, it is recommended to keep them on the same line as the argument or option they modify, because you may also continue to chain calls to `argument()` and `option()`.
+
+As stated earlier, `required()` cannot be combined with `defaultsTo()`.
+```JavaScript
+// THIS WILL THROW AN ERROR:
+new Command()
+	.argument("arg", "Some required argument").required().defaultsTo("default");
+```
 
 ## Multiple Commands
 Debates provides a `CommandHandler` class, in case you want to parse and differentiate between multiple different commands.
@@ -114,11 +129,11 @@ console.log("The arguments passed were:", parseResult.results._);
 `CommandParseResult` has only two members, `results` and `command`. The `results` object is the same as the one described above. `command` is the instance of `Command` that was parsed.
 
 ## Roadmap
-Debates needs fleshing out. The following are features that are not yet supported, but that I am working on:
-- [ ] Support for setting default values for arguments
+Debates is now as feature-complete as I originally intended it to be. Feature releases are not expected for the forseeable future. If you would like a new feature, please request it on the GitHub issues page.
 
 Complete:
 - [x] Option grouping (e.g. `-abcd` == `-a -b -c -d`)
+- [x] Support for setting default values for arguments
 - [x] A method for generating a help string from a command
 - [x] Support for options which take values `--like=this` (does not use the equals sign)
 - [x] Support for string arguments provided in quotes `"like this"` (currently only supported in option arguments, unsure if I will go any further)

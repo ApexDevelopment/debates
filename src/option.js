@@ -2,13 +2,19 @@ class Option {
 	#name;
 	#shorthand;
 	#description;
+	#default;
 	#required;
 	#accepts;
 	
-	constructor(name, shorthand = null, description = null, accepts = null, required = false) {
+	constructor(name, shorthand = null, description = null, accepts = null, defaultValue = null, required = false) {
+		if (required && defaultValue) {
+			throw new Error("Cannot set a default value for a required option.");
+		}
+
 		this.#name = name;
 		this.#shorthand = shorthand;
 		this.#description = description;
+		this.#default = defaultValue;
 		this.#required = required;
 		this.#accepts = accepts;
 	}
@@ -56,6 +62,30 @@ class Option {
 	}
 
 	/**
+	 * Sets the default value of the option, or returns the default value if no value is provided.
+	 * @param {any} defaultValue The default value of the option.
+	 * @returns {Option|any}
+	 */
+	defaultsTo(defaultValue) {
+		if (defaultValue) {
+			if (this.#required) {
+				throw new Error("Cannot set a default value for a required option.");
+			}
+			else if (this.#accepts && !this.validValue(defaultValue)) {
+				throw new Error("Invalid default value for option.");
+			}
+			else if (!this.#accepts && typeof defaultValue !== "boolean") {
+				throw new Error("Cannot use a non-boolean default value for a flag option.");
+			}
+
+			this.#default = defaultValue;
+			return this;
+		}
+
+		return this.#default;
+	}
+
+	/**
 	 * Sets the type of value that the option accepts, or returns the type if no value is provided.
 	 * If `accepts()` is never called, the option will not accept any value, and will be treated as a boolean flag.
 	 * @param {"string"|"integer"|"float"} [type] The new type of value that the option accepts.
@@ -81,6 +111,10 @@ class Option {
 	 */
 	required(required) {
 		if (typeof required === "boolean") {
+			if (required && this.#default) {
+				throw new Error("Cannot set an option as required if it has a default value.");
+			}
+
 			this.#required = required;
 			return this;
 		}

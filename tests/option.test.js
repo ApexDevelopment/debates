@@ -6,16 +6,24 @@ test("Option default constructor", () => {
 	expect(opt.shorthand()).toBe(null);
 	expect(opt.description()).toBe(null);
 	expect(opt.accepts()).toBe(null);
+	expect(opt.defaultsTo()).toBe(null);
 	expect(opt.required()).toBe(false);
 });
 
 test("Option constructor", () => {
-	const opt = new Option("opt", "o", "description", "string", true);
+	const opt = new Option("opt", "o", "description", "string", null, true);
 	expect(opt.name()).toBe("opt");
 	expect(opt.shorthand()).toBe("o");
 	expect(opt.description()).toBe("description");
 	expect(opt.accepts()).toBe("string");
+	expect(opt.defaultsTo()).toBe(null);
 	expect(opt.required()).toBe(true);
+});
+
+test("Option constructor failure", () => {
+	expect(() => {
+		const opt = new Option("opt", "o", "description", "string", "default", true);
+	}).toThrow();
 });
 
 test("Option name", () => {
@@ -47,6 +55,36 @@ test("Option accepts", () => {
 
 	expect(() => {
 		opt.accepts("bogus");
+	}).toThrow();
+});
+
+test("Option defaultsTo", () => {
+	const opt = new Option("opt");
+	opt.accepts("string");
+	opt.defaultsTo("default");
+	expect(opt.defaultsTo()).toBe("default");
+});
+
+test("Option defaultsTo required", () => {
+	const opt = new Option("opt");
+	opt.required(true);
+	expect(() => {
+		opt.defaultsTo("default");
+	}).toThrow();
+});
+
+test("Option defaultsTo invalid type", () => {
+	const opt = new Option("opt");
+	opt.accepts("integer");
+	expect(() => {
+		opt.defaultsTo("default");
+	}).toThrow();
+});
+
+test("Option defaultsTo when option is a flag", () => {
+	const opt = new Option("opt");
+	expect(() => {
+		opt.defaultsTo("default");
 	}).toThrow();
 });
 

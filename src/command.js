@@ -86,6 +86,25 @@ class Command {
 	}
 
 	/**
+	 * A convenience method for calling `defaultsTo()` on the last option or argument added.
+	 * @param {any} defaultValue The default value of the option or argument.
+	 * @returns {Command}
+	 */
+	defaultsTo(defaultValue) {
+		if (this.#lastAdded === "option") {
+			this.#acceptedOptions[this.#acceptedOptions.length - 1].defaultsTo(defaultValue);
+		}
+		else if (this.#lastAdded === "argument") {
+			this.#acceptedArguments[this.#acceptedArguments.length - 1].defaultsTo(defaultValue);
+		}
+		else {
+			throw new Error("Cannot set default value without any options or arguments.");
+		}
+
+		return this;
+	}
+
+	/**
 	 * A convenience method for calling `required(true)` on the last option or argument added.
 	 * @returns {Command}
 	 */
@@ -107,11 +126,12 @@ class Command {
 	 * Adds an argument to the command.
 	 * @param {string} name The name of the argument.
 	 * @param {string} [description] The description of the argument.
-	 * @param {boolean} [required] Whether or not the argument is required.
+	 * @param {any} [defaultValue] Deprecated: The default value of the argument. Use `defaultsTo()` instead.
+	 * @param {boolean} [required] Deprecated: Whether or not the argument is required. Use `required()` instead.
 	 * @returns {Command}
 	 */
-	argument(name, description = null, required = false) {
-		this.#acceptedArguments.push(new Argument(name, description, required));
+	argument(name, description = null, defaultValue = null, required = false) {
+		this.#acceptedArguments.push(new Argument(name, description, defaultValue, required));
 		this.#lastAdded = "argument";
 		return this;
 	}
@@ -132,12 +152,13 @@ class Command {
 	 * @param {string} name The name of the option.
 	 * @param {string} [shorthand] The shorthand name of the option.
 	 * @param {string} [description] The description of the option.
-	 * @param {string} [type] The type of value the option accepts.
-	 * @param {boolean} [required] Whether or not the option is required.
+	 * @param {string} [type] Deprecated: The type of value the option accepts. Use `accepts()` instead.
+	 * @param {any} [defaultValue] Deprecated: The default value of the option. Use `defaultsTo()` instead.
+	 * @param {boolean} [required] Deprecated: Whether or not the option is required. Use `required()` instead.
 	 * @returns {Command}
 	 */
-	option(name, shorthand = null, description = null, type = null, required = false) {
-		this.#acceptedOptions.push(new Option(name, shorthand, description, type, required));
+	option(name, shorthand = null, description = null, type = null, defaultValue = null, required = false) {
+		this.#acceptedOptions.push(new Option(name, shorthand, description, type, defaultValue, required));
 		this.#lastAdded = "option";
 		return this;
 	}
@@ -357,21 +378,32 @@ class Command {
 			i++;
 		}
 
-		// Mark options that we didn't see as false, or throw an error if they're required
+		// Mark options that we didn't see as false/default, or throw an error if they're required
 		this.#acceptedOptions.forEach((option) => {
-			if (!parsed.options[option.name()]) {
-				if (option.required()) {
+			if (parsed.options[option.name()] === undefined) {
+				// If there is a default value, use it
+				if (option.defaultsTo()) {
+					parsed.options[option.name()] = option.defaultsTo();
+				}
+				else if (option.required()) {
 					throw new Error(`Missing required option: ${option.name()}`);
 				}
-
-				parsed.options[option.name()] = false;
+				else {
+					parsed.options[option.name()] = false;
+				}
 			}
 		});
 
-		// Check if we have all required arguments
+		// Check if we have all required arguments and have set defaults for missing arguments
 		this.#acceptedArguments.forEach((argument) => {
-			if (!parsed.arguments[argument.name()] && argument.required()) {
-				throw new Error(`Missing required argument: ${argument.name()}`);
+			if (!parsed.arguments[argument.name()]) {
+				// If there is a default value, use it
+				if (argument.defaultsTo()) {
+					parsed.arguments[argument.name()] = argument.defaultsTo();
+				}
+				else if (argument.required()) {
+					throw new Error(`Missing required argument: ${argument.name()}`);
+				}
 			}
 		});
 
