@@ -89,12 +89,21 @@ class Option {
 	}
 
 	/**
-	 * Checks if the provided argument matches this option.
+	 * Checks if the provided argument matches this option's full name.
 	 * @param {string} arg The argument to check.
 	 * @returns {boolean}
 	 */
-	match(arg) {
-		return arg === `--${this.#name}` || arg === `-${this.#shorthand}`;
+	matchLong(arg) {
+		return arg === `--${this.#name}`;
+	}
+
+	/**
+	 * Checks if the provided argument matches this option's shorthand name.
+	 * @param {string} arg The argument to check.
+	 * @returns {boolean}
+	 */
+	matchShort(arg) {
+		return arg.indexOf(`${this.#shorthand}`) !== -1;
 	}
 
 	validValue(value) {

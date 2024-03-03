@@ -60,12 +60,23 @@ test("Option required", () => {
 
 test("Option match success", () => {
 	const opt = new Option("opt", "o");
-	expect(opt.match("--opt")).toBe(true);
-	expect(opt.match("-o")).toBe(true);
+	expect(opt.matchLong("--opt")).toBe(true);
+	expect(opt.matchShort("-o")).toBe(true);
 });
 
 test("Option match failure", () => {
 	const opt = new Option("opt", "o");
-	expect(opt.match("--opt2")).toBe(false);
-	expect(opt.match("-o2")).toBe(false);
+	expect(opt.matchLong("--opt2")).toBe(false);
+	expect(opt.matchShort("-a")).toBe(false);
+});
+
+test("Option group match success", () => {
+	const opt = new Option("opt", "o");
+	expect(opt.matchShort("-oabc")).toBe(true);
+	expect(opt.matchShort("-abco")).toBe(true);
+});
+
+test("Option group match failure", () => {
+	const opt = new Option("opt", "o");
+	expect(opt.matchShort("-abc")).toBe(false);
 });

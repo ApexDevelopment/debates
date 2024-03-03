@@ -116,9 +116,9 @@ console.log("The arguments passed were:", parseResult.results._);
 ## Roadmap
 Debates needs fleshing out. The following are features that are not yet supported, but that I am working on:
 - [ ] Support for setting default values for arguments
-- [ ] Option grouping (e.g. `-abcd` == `-a -b -c -d`)
 
 Complete:
+- [x] Option grouping (e.g. `-abcd` == `-a -b -c -d`)
 - [x] A method for generating a help string from a command
 - [x] Support for options which take values `--like=this` (does not use the equals sign)
 - [x] Support for string arguments provided in quotes `"like this"` (currently only supported in option arguments, unsure if I will go any further)

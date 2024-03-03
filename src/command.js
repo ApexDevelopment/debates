@@ -216,7 +216,8 @@ class Command {
 		}
 
 		let args = input.split(" ");
-		const isOption = (arg) => arg.startsWith("-");
+		const isLongOption = (arg) => arg.startsWith("--");
+		const isShortOption = (arg) => !isLongOption(arg) && arg.startsWith("-");
 
 		/**
 		 * @type {Option}
@@ -282,9 +283,9 @@ class Command {
 			else if (arg === "--") {
 				mode = ParseMode.NON_OPTIONS;
 			}
-			// Scan for options
-			else if (isOption(arg)) {
-				option = this.#acceptedOptions.find((option) => option.match(arg));
+			// Scan for long options
+			else if (isLongOption(arg)) {
+				option = this.#acceptedOptions.find((option) => option.matchLong(arg));
 
 				// If this option accepts a value (option argument), search for it
 				if (option && option.accepts()) {
@@ -300,6 +301,43 @@ class Command {
 				}
 				else {
 					parsed._.push(arg);
+				}
+			}
+			// Scan for short options (allows for grouped options e.g. -abc instead of -a -b -c)
+			else if (isShortOption(arg)) {
+				// This could be an option group, so we need to check each character
+				let optionGroup = [];
+				for (let char of arg) {
+					if (char === "-") {
+						continue;
+					}
+
+					let foundOption = this.#acceptedOptions.find((option) => option.matchShort(`${char}`));
+					optionGroup.push(foundOption);
+
+					// If this option accepts a value (option argument), this option must occur last in the group
+					if (foundOption && foundOption.accepts()) {
+						if (foundOption.shorthand() !== arg.charAt(arg.length - 1)) {
+							throw new Error(`Option ${foundOption.name()} accepts a value, and must occur last in the option group ${arg}.`);
+						}
+						
+						mode = ParseMode.OPTION_VALUE;
+					}
+					// Otherwise, set the option to true
+					else if (foundOption) {
+						parsed.options[foundOption.name()] = true;
+					}
+					// If the option is not recognized, throw an error or push it to _
+					else if (this.#strict) {
+						throw new Error(`Unknown option: ${arg}`);
+					}
+					else {
+						parsed._.push(arg);
+					}
+				}
+
+				if (optionGroup.length > 0) {
+					option = optionGroup[optionGroup.length - 1];
 				}
 			}
 			// Scan for arguments (non-options)

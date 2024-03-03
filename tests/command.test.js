@@ -95,6 +95,40 @@ test("Command parse with one option and one argument", () => {
 	expect(results.arguments.arg1).toBe("arg1value");
 });
 
+test("Command parse with two options using option grouping", () => {
+	const cmd = new Command("cmd")
+		.option("option1", "o", "description")
+		.option("option2", "p", "description");
+	const results = cmd.parseSync("-op");
+
+	expect(Object.keys(results.options).length).toBe(2);
+	expect(results.options.option1).toBe(true);
+	expect(results.options.option2).toBe(true);
+});
+
+test("Command parse with two options using option grouping and last-option value", () => {
+	const cmd = new Command("cmd")
+		.option("option1", "o", "description")
+		.option("option2", "p", "description")
+		.accepts("string");
+	const results = cmd.parseSync("-op o2value");
+
+	expect(Object.keys(results.options).length).toBe(2);
+	expect(results.options.option1).toBe(true);
+	expect(results.options.option2).toBe("o2value");
+});
+
+test("Option grouping last-option value failure", () => {
+	const cmd = new Command("cmd")
+		.option("option1", "o", "description")
+		.option("option2", "p", "description")
+		.accepts("string");
+		
+	expect(() => {
+		cmd.parseSync("-po o2value");
+	}).toThrow();
+});
+
 test("Command parse missing required option", () => {
 	const cmd = new Command("cmd")
 		.option("option1", "o", "description", "string", true);
