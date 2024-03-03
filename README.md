@@ -17,7 +17,7 @@ Debates is a very easy command parser. It can be used to parse CLI arguments wit
 ## Example
 This is an example of a simple "echo" command:
 ```JavaScript
-const { Command } = require("debates");
+import { Command } from "debates";
 
 let echo = new Command()
 	.name("echo")
@@ -135,5 +135,5 @@ Complete:
 - [x] Option grouping (e.g. `-abcd` == `-a -b -c -d`)
 - [x] Support for setting default values for arguments
 - [x] A method for generating a help string from a command
-- [x] Support for options which take values `--like=this` (does not use the equals sign)
+- [x] Support for options which take values `--like this`
 - [x] Support for string arguments provided in quotes `"like this"` (currently only supported in option arguments, unsure if I will go any further)
